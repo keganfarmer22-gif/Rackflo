@@ -211,6 +211,32 @@
       line-height: 1.7;
       color: #777777;
     }
+    .share-btn {
+  width: 100%;
+  margin-top: 18px;
+  padding: 12px 14px;
+  background: transparent;
+  color: #ffffff;
+  border: 1px solid #2a2a2a;
+  border-radius: 8px;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 500;
+  transition: 0.2s ease;
+}
+
+.share-btn:hover {
+  background: #111111;
+  border-color: #3a3a3a;
+}
+
+.share-note {
+  min-height: 18px;
+  margin-top: 10px;
+  font-size: 12px;
+  color: #555555;
+  text-align: center;
+}
 
     footer {
       padding: 0 24px 32px;
@@ -253,8 +279,7 @@
 
       <div>
         <label class="form-label" for="phone">Phone</label>
-        <input id="phone" type="tel" placeholder="(360) 000-0000">
-      </div>
+<input id="phone" type="tel" placeholder="(360) 000-0000" maxlength="14">      </div>
 
       <div>
         <label class="form-label" for="city">City</label>
@@ -329,13 +354,16 @@
       <p class="form-note">No spam, launch updates only.</p>
     </div>
 
-    <div class="success-wrap" id="successWrap">
-      <div class="success-check">✓</div>
-      <div class="success-title">Form submitted.</div>
-      <p class="success-text">
-        You're on the list. We’ll reach out with launch updates and early access details.
-      </p>
-    </div>
+   <div class="success-wrap" id="successWrap">
+  <div class="success-check">✓</div>
+  <div class="success-title">Form submitted.</div>
+  <p class="success-text">
+    You're on the list. We’ll reach out with launch updates and early access details.
+  </p>
+
+  <button type="button" class="share-btn" id="shareBtn">Share rackflo</button>
+  <p class="share-note" id="shareNote"></p>
+</div>
   </main>
 
   <footer>We're building something.</footer>
@@ -356,15 +384,20 @@
 
   const phoneInput = document.getElementById("phone");
   phoneInput.addEventListener("input", function () {
-    let value = this.value.replace(/\D/g, "").substring(0, 10);
+    let digits = this.value.replace(/\D/g, "").substring(0, 10);
+    let formatted = "";
 
-    if (value.length > 6) {
-      value = `(${value.substring(0, 3)}) ${value.substring(3, 6)}-${value.substring(6)}`;
-    } else if (value.length > 3) {
-      value = `(${value.substring(0, 3)}) ${value.substring(3)}`;
+    if (digits.length > 0) {
+      formatted += "(" + digits.substring(0, 3);
+    }
+    if (digits.length >= 4) {
+      formatted += ") " + digits.substring(3, 6);
+    }
+    if (digits.length >= 7) {
+      formatted += "-" + digits.substring(6, 10);
     }
 
-    this.value = value;
+    this.value = formatted;
   });
 
   document.getElementById("submitBtn").addEventListener("click", async function () {
@@ -373,9 +406,10 @@
     const phone = document.getElementById("phone").value.trim();
     const city = document.getElementById("city").value.trim();
     const state = document.getElementById("state").value;
+    const digitsOnly = phone.replace(/\D/g, "");
 
-    if (!name || !phone || !city || !state) {
-      alert("Please fill out all fields.");
+    if (!name || !phone || !city || !state || digitsOnly.length !== 10) {
+      alert("Please fill out all fields and enter a valid 10-digit phone number.");
       return;
     }
 
@@ -410,6 +444,31 @@
       submitBtn.textContent = "Get Early Access";
     }
   });
+
+  const shareBtn = document.getElementById("shareBtn");
+  const shareNote = document.getElementById("shareNote");
+
+  if (shareBtn) {
+    shareBtn.addEventListener("click", async function () {
+      const shareData = {
+        title: "rackflo",
+        text: "Skip the wait and play on your time with rackflo.",
+        url: window.location.href
+      };
+
+      try {
+        if (navigator.share) {
+          await navigator.share(shareData);
+          shareNote.textContent = "Thanks for sharing.";
+        } else {
+          await navigator.clipboard.writeText(window.location.href);
+          shareNote.textContent = "Link copied.";
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    });
+  }
 </script>
 </body>
 </html>
